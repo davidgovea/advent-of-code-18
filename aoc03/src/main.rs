@@ -78,6 +78,30 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
 }
 
 fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
+
+    let claims = get_claims(input);
+
+    let squares = build_claim_map(&claims);
+
+    // Loop through claims' cells again, and find the one with no overlap in the squares map
+    let unique_claim = claims.iter().find(|claim| {
+        for dx in 0..claim.w {
+            for dy in 0..claim.h {
+                let key = (claim.x + dx, claim.y + dy);
+                match squares.get(&key) {
+                    Some(n) if n > &1 => {
+                        return false;
+                    },
+                    _ => ()
+                }
+            }
+        }
+
+        true
+    }).unwrap();
+
+    writeln!(io::stdout(), "looks like only one of you picked a fully unique piece of fabric. who had claim #{}?", unique_claim.id)?;
+
     Ok(())
 }
 
