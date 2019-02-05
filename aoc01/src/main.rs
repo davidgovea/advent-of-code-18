@@ -2,7 +2,7 @@ use std::io::{self, Read, Write};
 use std::collections::HashSet;
 
 fn main() -> Result<(), Box<std::error::Error>> {
-    println!("-- Advent of Code 2018 -- Day 1 --");
+    println!("-- Advent of Code 2018 -- Day 1 --\n");
 
     let mut input = String::new();
     io::stdin().read_to_string(&mut input)?;

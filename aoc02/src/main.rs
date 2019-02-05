@@ -2,7 +2,7 @@ use std::io::{self, Read, Write};
 use std::collections::HashMap;
 
 fn main() -> Result<(), Box<std::error::Error>> {
-    println!("-- Advent of Code 2018 -- Day 2 --");
+    println!("-- Advent of Code 2018 -- Day 2 --\n");
 
     let mut input = String::new();
     io::stdin().read_to_string(&mut input)?;
@@ -62,8 +62,19 @@ fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
                 }) == Ok(1)
         }).unwrap();
     
-    writeln!(io::stdout(), "looks like these two are the right ones. let's see if the fabric is inside!\n{}\n{}", fabric_boxes[0], fabric_boxes[1])?;
+    writeln!(io::stdout(), "looks like these two are the right ones. let's see if the fabric is inside!\n{}\n{}\n", fabric_boxes[0], fabric_boxes[1])?;
 
+    let shared_chars = fabric_boxes[0]
+        .chars()
+        .zip(fabric_boxes[1].chars())
+        .fold(String::new(), |shared, (c1, c2)| {
+            match c1 == c2 {
+                true => shared + &c1.to_string(),
+                false => shared
+            }
+        });
+
+    writeln!(io::stdout(), "the two boxes share the letters:\n{}", shared_chars)?;
     Ok(())
 }
 
