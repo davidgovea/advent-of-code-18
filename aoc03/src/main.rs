@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
 
 #[derive(Debug)]
 struct FabricClaim {
-    // id: String,
+    id: String,
     x: u32,
     y: u32,
     w: u32,
@@ -24,7 +24,7 @@ struct FabricClaim {
 }
 
 fn get_claims(input: &str) -> Vec<FabricClaim> {
-    let extract_data = Regex::new(r"#\d+\s+@\s+(\d+),(\d+):\s+(\d+)x(\d+)").unwrap();
+    let extract_data = Regex::new(r"#(\d+)\s+@\s+(\d+),(\d+):\s+(\d+)x(\d+)").unwrap();
 
     input
         .lines()
@@ -32,19 +32,17 @@ fn get_claims(input: &str) -> Vec<FabricClaim> {
             let data = extract_data.captures(l).unwrap();
             FabricClaim {
                 // Ug this is nasty
-                x: data.get(1).unwrap().as_str().parse().unwrap(),
-                y: data.get(2).unwrap().as_str().parse().unwrap(),
-                w: data.get(3).unwrap().as_str().parse().unwrap(),
-                h: data.get(4).unwrap().as_str().parse().unwrap(),
+                id: data.get(1).unwrap().as_str().to_string(),
+                x: data.get(2).unwrap().as_str().parse().unwrap(),
+                y: data.get(3).unwrap().as_str().parse().unwrap(),
+                w: data.get(4).unwrap().as_str().parse().unwrap(),
+                h: data.get(5).unwrap().as_str().parse().unwrap(),
             }
         })
         .collect::<Vec<_>>()
 }
 
-fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
-
-    let claims = get_claims(input);
-
+fn build_claim_map(claims: &Vec<FabricClaim>) -> HashMap<(u32, u32), u32> {
     let mut squares = HashMap::new();
     
     // easy mode: just count every claim's squares individually, then loop through encountered
@@ -57,6 +55,16 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
         }
     }
 
+    squares
+}
+
+fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
+
+    let claims = get_claims(input);
+
+    let squares = build_claim_map(&claims);
+
+    // Count the number of multiply-claimed cells
     let multi_claim_inches = squares.iter().fold(0, |sum, (_location, claim_count)| {
         match claim_count > &1 {
             true => sum + 1,
