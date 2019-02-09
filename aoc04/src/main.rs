@@ -82,7 +82,7 @@ fn get_sleep_timesheets(events: &Vec<GuardEvent>) -> SleepTimesheets {
             }
             let caps = MINUTE_EXTRACT.captures(&event.timestamp).unwrap();
 
-            let mut minute: u32 = caps.get(1).unwrap().as_str().parse().unwrap();
+            let minute: u32 = caps.get(1).unwrap().as_str().parse().unwrap();
             match event.event_type {
                 EventType::WakeUp => {
                     for min in sleeping_at.unwrap()..minute {
@@ -122,13 +122,26 @@ fn part1(sleep_timesheets: &SleepTimesheets) -> Result<(), Box<std::error::Error
 
     let sleepiest_minute = minutes_worked.last().unwrap().0;
     
-    writeln!(io::stdout(), "the sleepiest guard ({}) sleeps most deeply at {} past the stroke of midnight\n\nAnswer: guard * minute =\n{}", most_sleepy_guard_id, sleepiest_minute, most_sleepy_guard_id * sleepiest_minute)?;
+    writeln!(io::stdout(), "the sleepiest guard ({}) sleeps most often at {} past the stroke of midnight\n\nAnswer: guard * minute =\n{}", most_sleepy_guard_id, sleepiest_minute, most_sleepy_guard_id * sleepiest_minute)?;
     Ok(())
 }
 
 fn part2(sleep_timesheets: &SleepTimesheets) -> Result<(), Box<std::error::Error>> {
 
-    // writeln!(io::stdout(), "result {}", ())?;
+    let mut top_minutes_slept = sleep_timesheets
+        .iter()
+        .map(|(guard_id, punchcard)| {
+            let mut minutes = punchcard.iter().collect::<Vec<_>>();
+            minutes.sort_by_key(|m| m.1);
+            let top_minute = minutes.last().unwrap();
+            (*guard_id, top_minute.0, top_minute.1)
+        })
+        .collect::<Vec<_>>();
+
+    top_minutes_slept.sort_by_key(|t| t.2);
+
+    let (guard_id, minute, _) = top_minutes_slept.last().unwrap();
+    writeln!(io::stdout(), "\non the other hand, guard {} sleeps less, but nods off more than usual at about {} past.\n\nAnswer: guard * minute =\n{}", *guard_id, **minute, *guard_id * **minute)?;
     Ok(())
 }
 
