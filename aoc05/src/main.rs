@@ -1,4 +1,5 @@
 use std::io::{self, Read, Write};
+use std::collections::HashMap;
 
 fn main() -> Result<(), Box<std::error::Error>> {
     println!("-- Advent of Code 2018 -- Day 5 --\n");
@@ -12,6 +13,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
+// Flips capitalization
 fn reverse_polarity(c: char) -> String {
     match c.is_uppercase() {
         true => c.to_lowercase().to_string(),
@@ -19,8 +21,7 @@ fn reverse_polarity(c: char) -> String {
     }
 }
 
-fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
-
+fn reduce_polymer(input: &str) -> Result<String, Box<std::error::Error>> {
     let mut final_reduction = input.trim().chars().collect::<Vec<_>>();
     let starting_length = final_reduction.len();
 
@@ -31,6 +32,8 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
             _ => break,
         };
 
+        // When a match is found, back-track search index by one.
+        //  A greedy matcher could be more efficient
         match is_match {
             true => {
                 final_reduction.remove(search_index + 1);
@@ -45,8 +48,13 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
         }
     }
 
-    let final_polymer = final_reduction.iter().collect::<String>();
-    println!("final {}", final_polymer);
+    Ok(final_reduction.iter().collect::<String>())
+}
+
+fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
+
+    let starting_length = input.trim().len();
+    let final_polymer = reduce_polymer(input)?;
 
     writeln!(io::stdout(), "polymer reduction complete! initial length: {} - reduced to {}", starting_length, final_polymer.len())?;
     Ok(())
@@ -54,7 +62,23 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
 
 fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
 
-    // writeln!(io::stdout(), "result {:?}", ())?;
+    let starting_length = input.trim().len();
+    let base_polymer = reduce_polymer(input)?;
+
+    let mut unit_tests: HashMap<String, usize> = HashMap::new();
+    for c in base_polymer.chars() {
+        let unit = c.to_lowercase().to_string();
+        if !unit_tests.contains_key(&unit) {
+            let stripped_polymer = base_polymer.replace(&unit, "").replace(&c.to_uppercase().to_string(), "");
+            unit_tests.insert(unit, reduce_polymer(&stripped_polymer)?.len());
+        }
+    }
+
+    let mut sorted_polymer_tests = unit_tests.iter().collect::<Vec<_>>();
+    sorted_polymer_tests.sort_by_key(|t| t.1);
+    let (most_effecient_removal, new_length) = sorted_polymer_tests.first().unwrap();
+
+    writeln!(io::stdout(), "removing unit '{}' resulted in the most significant reduction in polymer length: down to {}!", most_effecient_removal, new_length)?;
     Ok(())
 }
 
