@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
 
 #[derive(Debug)]
 enum EventType {
-    NewGuard(u32),
+    NewGuard(GuardId),
     FallAsleep,
     WakeUp,
 }
@@ -53,12 +53,13 @@ struct GuardEvent {
     timestamp: String,
     event_type: EventType,
 }
-type SleepTimesheets = HashMap<u32, HashMap<u32, u32>>;
+type GuardId = u32;
+type SleepTimesheets = HashMap<GuardId, HashMap<u32, u32>>;
 
 fn get_sleep_timesheets(events: &Vec<GuardEvent>) -> SleepTimesheets {
     // Group events by guard
-    let mut events_by_guard: HashMap<u32, Vec<&GuardEvent>> = HashMap::new();
-    let mut current_id: u32 = Default::default();
+    let mut events_by_guard: HashMap<GuardId, Vec<&GuardEvent>> = HashMap::new();
+    let mut current_id: GuardId = Default::default();
     for event in events {
         match event.event_type {
             EventType::NewGuard(id) => {
@@ -71,7 +72,7 @@ fn get_sleep_timesheets(events: &Vec<GuardEvent>) -> SleepTimesheets {
     }
 
     // Create a per-minute time card for each guard
-    let mut sleep_timesheets: HashMap<u32, HashMap<u32, u32>> = HashMap::new();
+    let mut sleep_timesheets: HashMap<GuardId, HashMap<u32, u32>> = HashMap::new();
     for (guard_id, event_list) in events_by_guard.iter() {
         let mut sleeping_at: Option<u32> = None;
         for event in event_list {
@@ -103,7 +104,7 @@ fn get_sleep_timesheets(events: &Vec<GuardEvent>) -> SleepTimesheets {
 fn part1(sleep_timesheets: &SleepTimesheets) -> Result<(), Box<std::error::Error>> {
     
     // Sum all timecards, and sort ascending
-    let mut minute_totals: Vec<(u32, u32)> = sleep_timesheets
+    let mut minute_totals: Vec<(GuardId, u32)> = sleep_timesheets
         .iter()
         .map(|(guard_id, punchcard)| {
             (*guard_id, punchcard.values().sum())
