@@ -14,13 +14,13 @@ fn main() -> Result<(), Box<std::error::Error>> {
 
 fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
 
-    writeln!(io::stdout(), "result {}", ())?;
+    writeln!(io::stdout(), "result {:?}", ())?;
     Ok(())
 }
 
 fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
 
-    writeln!(io::stdout(), "result {}", ())?;
+    writeln!(io::stdout(), "result {:?}", ())?;
     Ok(())
 }
 
