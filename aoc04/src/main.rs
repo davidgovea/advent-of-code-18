@@ -33,8 +33,10 @@ fn main() -> Result<(), Box<std::error::Error>> {
 
     events.sort_by_key(|e| e.timestamp.clone()); // TODO -- how do i not clone here
 
-    part1(&events)?;
-    part2(&events)?;
+    let sleep_timesheets = get_sleep_timesheets(&events);
+
+    part1(&sleep_timesheets)?;
+    part2(&sleep_timesheets)?;
 
     Ok(())
 }
@@ -51,13 +53,13 @@ struct GuardEvent {
     timestamp: String,
     event_type: EventType,
 }
+type SleepTimesheets = HashMap<u32, HashMap<u32, u32>>;
 
-fn part1(sorted_events: &Vec<GuardEvent>) -> Result<(), Box<std::error::Error>> {
-    
+fn get_sleep_timesheets(events: &Vec<GuardEvent>) -> SleepTimesheets {
     // Group events by guard
     let mut events_by_guard: HashMap<u32, Vec<&GuardEvent>> = HashMap::new();
     let mut current_id: u32 = Default::default();
-    for event in sorted_events {
+    for event in events {
         match event.event_type {
             EventType::NewGuard(id) => {
                 current_id = id;
@@ -69,7 +71,7 @@ fn part1(sorted_events: &Vec<GuardEvent>) -> Result<(), Box<std::error::Error>> 
     }
 
     // Create a per-minute time card for each guard
-    let mut punchcard_map: HashMap<u32, HashMap<u32, u32>> = HashMap::new();
+    let mut sleep_timesheets: HashMap<u32, HashMap<u32, u32>> = HashMap::new();
     for (guard_id, event_list) in events_by_guard.iter() {
         let mut sleeping_at: Option<u32> = None;
         for event in event_list {
@@ -84,7 +86,7 @@ fn part1(sorted_events: &Vec<GuardEvent>) -> Result<(), Box<std::error::Error>> 
             match event.event_type {
                 EventType::WakeUp => {
                     for min in sleeping_at.unwrap()..minute {
-                        *punchcard_map.entry(*guard_id).or_default().entry(min).or_default() += 1;
+                        *sleep_timesheets.entry(*guard_id).or_default().entry(min).or_default() += 1;
                     }
                     sleeping_at = None;
                     // mark sleep minutes
@@ -95,9 +97,13 @@ fn part1(sorted_events: &Vec<GuardEvent>) -> Result<(), Box<std::error::Error>> 
             }
         }
     }
+    sleep_timesheets
+}
 
+fn part1(sleep_timesheets: &SleepTimesheets) -> Result<(), Box<std::error::Error>> {
+    
     // Sum all timecards, and sort ascending
-    let mut minute_totals: Vec<(u32, u32)> = punchcard_map
+    let mut minute_totals: Vec<(u32, u32)> = sleep_timesheets
         .iter()
         .map(|(guard_id, punchcard)| {
             (*guard_id, punchcard.values().sum())
@@ -109,7 +115,7 @@ fn part1(sorted_events: &Vec<GuardEvent>) -> Result<(), Box<std::error::Error>> 
     let most_sleepy_guard_id = minute_totals.last().unwrap().0;
 
     // Profile the guard's slept minutes - sort
-    let mut minutes_worked = punchcard_map.get(&most_sleepy_guard_id).unwrap()
+    let mut minutes_worked = sleep_timesheets.get(&most_sleepy_guard_id).unwrap()
         .iter()
         .collect::<Vec<_>>();
     minutes_worked.sort_by_key(|m| m.1);
@@ -120,7 +126,7 @@ fn part1(sorted_events: &Vec<GuardEvent>) -> Result<(), Box<std::error::Error>> 
     Ok(())
 }
 
-fn part2(sorted_events: &Vec<GuardEvent>) -> Result<(), Box<std::error::Error>> {
+fn part2(sleep_timesheets: &SleepTimesheets) -> Result<(), Box<std::error::Error>> {
 
     // writeln!(io::stdout(), "result {}", ())?;
     Ok(())
