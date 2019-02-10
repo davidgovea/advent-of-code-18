@@ -22,11 +22,26 @@ fn parse_coords(input: &str) -> Vec<CoordEntry> {
         (index, (parsed[0], parsed[1]))
     }).collect::<Vec<CoordEntry>>()
 }
+
+fn get_bounding_rect(coords: &Vec<CoordEntry>) -> (Coord, Coord) {
+    let mut sort_coords = coords.clone();
+    sort_coords.sort_by_key(|c| (c.1).0);
+    let min_x = (sort_coords.first().unwrap().1).0;
+    let max_x = (sort_coords.last().unwrap().1).0;
+
+    sort_coords.sort_by_key(|c| (c.1).1);
+    let min_y = (sort_coords.first().unwrap().1).1;
+    let max_y = (sort_coords.last().unwrap().1).1;
+
+    ((min_x, min_y), (max_x, max_y))
+}
+
 #[derive(Debug)]
 enum CellState {
     Shared,
     Claimed(CellClaim)
 }
+
 #[derive(Debug)]
 struct CellClaim {
     dist: u32,
@@ -53,14 +68,8 @@ fn enumerate_points(coord: &Coord, distance: i32) -> Vec<Coord> {
 
 fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
 
-    let mut coords_list = parse_coords(input);
-    coords_list.sort_by_key(|c| (c.1).0);
-    let min_x = (coords_list.first().unwrap().1).0;
-    let max_x = (coords_list.last().unwrap().1).0;
-
-    coords_list.sort_by_key(|c| (c.1).1);
-    let min_y = (coords_list.first().unwrap().1).1;
-    let max_y = (coords_list.last().unwrap().1).1;
+    let coords_list = parse_coords(input);
+    let ((min_x, min_y), (max_x, max_y)) = get_bounding_rect(&coords_list);
 
     let search_area = (max_x - min_x + 1) * (max_y - min_y + 1);
 
@@ -123,7 +132,44 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
 
 fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
 
-    writeln!(io::stdout(), "result {:?}", ())?;
+    let coords_list = parse_coords(input);
+    let coord_count = coords_list.len();
+    let ((min_x, min_y), (max_x, max_y)) = get_bounding_rect(&coords_list);
+
+    let search_area = (max_x - min_x + 1) * (max_y - min_y + 1);
+
+    let mut grid: HashMap<(i32, i32), Vec<(CoordId, u32)>> = HashMap::new();
+    let mut search_distance = 0;
+    let mut cells_reached = 0;
+    let mut found_area = 0;
+
+    while cells_reached < search_area {
+        for (coord_id, coord) in &coords_list {
+            let points_to_visit = enumerate_points(coord, search_distance);
+
+            for point in points_to_visit {
+                if point.0 < min_x || point.0 > max_x ||
+                   point.1 < min_y || point.1 > max_y { continue; }
+                grid.entry(point).or_default().push((*coord_id, search_distance as u32));
+
+                match grid.get(&point) {
+                    Some(l) if l.len() == coord_count => {
+                        cells_reached += 1;
+                        let distance_sum = l.iter().map(|d| d.1).sum::<u32>();
+                        if (distance_sum < 10000) {
+                            found_area += 1;
+                        }
+                    },
+                    _ => ()
+                }
+            }
+
+        }
+        search_distance += 1;
+
+    }
+
+    writeln!(io::stdout(), "there are {} cells within a total distance of 10000 from all points", found_area)?;
     Ok(())
 }
 
