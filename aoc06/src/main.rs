@@ -138,7 +138,7 @@ fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
 
     let search_area = (max_x - min_x + 1) * (max_y - min_y + 1);
 
-    let mut grid: HashMap<(i32, i32), Vec<(CoordId, u32)>> = HashMap::new();
+    let mut grid: HashMap<(i32, i32), (u32, u32)> = HashMap::new();
     let mut search_distance = 0;
     let mut cells_reached = 0;
     let mut found_area = 0;
@@ -150,23 +150,28 @@ fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
             for point in points_to_visit {
                 if point.0 < min_x || point.0 > max_x ||
                    point.1 < min_y || point.1 > max_y { continue; }
-                grid.entry(point).or_default().push((*coord_id, search_distance as u32));
 
                 match grid.get(&point) {
-                    Some(l) if l.len() == coord_count => {
-                        cells_reached += 1;
-                        let distance_sum = l.iter().map(|d| d.1).sum::<u32>();
-                        if (distance_sum < 10000) {
-                            found_area += 1;
+                    Some((count, total)) => {
+                        let new_total = total + &(search_distance as u32);
+
+                        if count == &((coord_count - 1) as u32) {
+                            cells_reached += 1;
+                            if (new_total) < 10000 {
+                                found_area += 1;
+                            }
+                        } else {
+                            grid.insert(point, (count + 1, new_total));
                         }
                     },
-                    _ => ()
+                    None => {
+                        grid.insert(point, (1, search_distance as u32));
+                    }
                 }
             }
 
         }
         search_distance += 1;
-
     }
 
     writeln!(io::stdout(), "there are {} cells within a total distance of 10000 from all points", found_area)?;
