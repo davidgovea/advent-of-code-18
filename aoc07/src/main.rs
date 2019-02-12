@@ -43,52 +43,69 @@ struct Prerequisite {
     requires: u32,
 }
 
-fn part1(input: &Vec<Prerequisite>) -> Result<(), Box<std::error::Error>> {
+struct BinaryDigitIterator {
+    digits: u32,
+    max_digits: u32,
+}
 
-    let mut compound_requirements: HashMap<u32, u32> = HashMap::new();
-    let mut all_requirements = 0;
-    let mut all_steps = 0;
-    for prereq in input {
-        *compound_requirements.entry(prereq.step).or_default() |= prereq.requires;
-        all_requirements |= prereq.requires;
-        all_steps |= prereq.step;
-    }
+impl Iterator for BinaryDigitIterator {
+    type Item = u32;
 
-    let known_steps = all_requirements | all_steps;
-    let step_count = (known_steps as f32).log2() as usize;
-    let mut step_list: Vec<u32> = Vec::new();
-    let mut current_state = 0;
-
-    while step_list.len() < step_count {
-        let mut shifted_steps = known_steps;
-        let mut digit = 0;
-        while shifted_steps >= 1 {
-            if dec & 1 == 0 {
-                // No mention of this step..
-                continue;
-            }
-            let num = 1 << digit;
-            match compound_requirements.get(&num) {
-                None if current_state & num != num => {
-                    step_list.push(num);
-                    current_state |= num;
-                    break;
-                },
-                Some(r) if r & current_state == *r => {
-                    if num & current_state != num {
-                        step_list.push(num);
-                        current_state |= num;
-                        break;
-                    }
-                },
-                _ => ()
-            }
-            shifted_steps >>= 1;
-            digit += 1;
+    fn next(&mut self) -> Option<u32> {
+        let value = 1 << self.digits;
+        match self.digits < self.max_digits {
+            true => {
+                self.digits += 1;
+                Some(value)
+            },
+            false => None
         }
     }
+}
 
-    writeln!(io::stdout(), "{:#b} current_state\n{:?} list", current_state, step_list.iter().map(to_char).collect::<String>())?;
+fn binary_digit_iterator(digits: u32) -> BinaryDigitIterator {
+    BinaryDigitIterator { digits: 0, max_digits: digits }
+}
+
+fn part1(input: &Vec<Prerequisite>) -> Result<(), Box<std::error::Error>> {
+
+    let compound_requirements: HashMap<u32, u32> = input.iter()
+        .fold(HashMap::new(), |mut map, prereq| {
+            *map.entry(prereq.step).or_default() |= prereq.requires;
+            map
+        });
+
+    let all_steps = compound_requirements.keys().fold(0, |all, step| all | step);
+    let all_requirements = compound_requirements.values().fold(0, |all, req| all | req);
+
+    let known_steps = all_requirements | all_steps;
+    let step_count = (known_steps as f32).log2() as u32;
+
+    let mut current_state = 0;
+    let step_list2 = (0..step_count)
+        .map(|_n| {
+            for (index, step) in binary_digit_iterator(step_count).enumerate() {
+                if step & (1 << index) == 0 {
+                    // No mention of this step..
+                    continue;
+                }
+                let num = 1 << index;
+                if current_state & num == num {
+                    // This step already performed
+                    continue;
+                }
+                let requirements = compound_requirements.get(&num).unwrap_or(&0);
+                if requirements & current_state == *requirements {
+                    // Requirements are met - perform!
+                    current_state |= num;
+                    return num;
+                }
+            }
+            panic!()
+        })
+        .collect::<Vec<_>>();
+
+    writeln!(io::stdout(), "steps in order: {}", step_list2.iter().map(to_char).collect::<String>())?;
     Ok(())
 }
 
