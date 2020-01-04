@@ -12,10 +12,23 @@ fn main() -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
+fn calculate_fuel(module_mass: i32) -> i32 {
+    (module_mass as f64 / 3.0f64) as i32 - 2
+}
+
+fn calculate_fuel_recursive(module_mass: i32) -> i32 {
+    match calculate_fuel(module_mass) {
+        n if n > 0 => {
+            n + calculate_fuel_recursive(n)
+        },
+        _ => 0
+    }
+}
+
 fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
     let fuel_requirements = input.lines().map(|n| {
         let module_mass = n.parse::<i32>().unwrap();
-        (module_mass as f64 / 3.0f64) as i32 - 2
+        calculate_fuel(module_mass)
     });
 
     let total_fuel = fuel_requirements.sum::<i32>();
@@ -25,6 +38,13 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
 }
 
 fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
-    writeln!(io::stdout(), "result {:?}", ())?;
+    let fuel_requirements = input.lines().map(|n| {
+        let module_mass = n.parse::<i32>().unwrap();
+        calculate_fuel_recursive(module_mass)
+    });
+
+    let total_fuel = fuel_requirements.sum::<i32>();
+
+    writeln!(io::stdout(), "result {:?}", total_fuel)?;
     Ok(())
 }
