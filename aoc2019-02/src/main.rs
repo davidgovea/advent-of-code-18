@@ -73,27 +73,65 @@ fn run_intcode_program(program_memory: &mut Vec<i32>) -> Result<&Vec<i32>, Box<d
 
 fn parse_intcode_program(input: &str) -> Result<Vec<i32>, Box<dyn Error>> {
     Ok(input
-    .split(",")
-    .map(|n| n.trim().parse::<i32>().unwrap())
-    .collect::<Vec<i32>>())
+        .split(",")
+        .map(|n| n.trim().parse::<i32>().unwrap())
+        .collect::<Vec<i32>>())
 }
 
 fn part1(input: &str) -> Result<(), Box<dyn Error>> {
-    let mut program_memory = parse_intcode_program(input)?;
+    let initial_memory = parse_intcode_program(input)?;
 
-    // Perform 1202 alarm modifications
-    program_memory[1] = 12;
-    program_memory[2] = 2;
-
-    run_intcode_program(&mut program_memory)?;
-
-    let result_1202 = program_memory[0];
-
+    let result_1202 = perform_computation(12, 2, &initial_memory)?;
     writeln!(io::stdout(), "result {:?}", result_1202)?;
     Ok(())
 }
 
-fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
-    writeln!(io::stdout(), "result {:?}", ())?;
+fn perform_computation(
+    noun: i32,
+    verb: i32,
+    initial_memory: &Vec<i32>,
+) -> Result<i32, Box<dyn Error>> {
+    let mut program_memory = initial_memory.clone();
+
+    // Add 'noun' / 'verb' parameters
+    program_memory[1] = noun;
+    program_memory[2] = verb;
+
+    run_intcode_program(&mut program_memory)?;
+
+    Ok(program_memory[0])
+}
+
+fn discover_noun_and_verb(
+    desired_result: i32,
+    initial_memory: &Vec<i32>,
+) -> Result<(i32, i32), Box<dyn Error>> {
+    'search: for noun in 0..100 {
+        for verb in 0..100 {
+            match perform_computation(noun, verb, &initial_memory)? {
+                result if result == desired_result => {
+                    return Ok((noun, verb));
+                }
+                _ => (),
+            };
+        }
+    }
+
+    Err("Unable to find valid noun and verb inputs".into())
+}
+
+fn part2(input: &str) -> Result<(), Box<dyn Error>> {
+    let initial_memory = parse_intcode_program(input)?;
+    let desired_course = 19690720;
+
+    let (noun, verb) = discover_noun_and_verb(desired_course, &initial_memory)?;
+    writeln!(
+        io::stdout(),
+        "Computation complete! Noun: {}, Verb: {}, Final result: {}",
+        noun,
+        verb,
+        100 * noun + verb
+    )?;
+
     Ok(())
 }
