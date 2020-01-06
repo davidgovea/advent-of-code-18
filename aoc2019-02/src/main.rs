@@ -9,7 +9,7 @@ enum OpCode {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    println!("-- Advent of Code 2019 -- Day 1 --\n");
+    println!("-- Advent of Code 2019 -- Day 2 --\n");
 
     let mut input = String::new();
     io::stdin().read_to_string(&mut input)?;
