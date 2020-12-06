@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::io::{self, Read, Write};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("-- Advent of Code 2020 -- Day 1 --\n");
+    println!("-- Advent of Code 2020 -- Day 3 --\n");
 
     let mut input = String::new();
     io::stdin().read_to_string(&mut input)?;

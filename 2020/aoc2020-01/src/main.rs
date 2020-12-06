@@ -1,6 +1,6 @@
 use std::io::{self, Read, Write};
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("-- Advent of Code 2020 -- Day 1 --\n");
 
     let mut input = String::new();
@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
-fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part1(input: &str) -> Result<(), Box<dyn std::error::Error>> {
     let numbers = input
         .lines()
         .map(|n| n.parse::<i32>().unwrap())
@@ -36,7 +36,7 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
-fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part2(input: &str) -> Result<(), Box<dyn std::error::Error>> {
     let numbers = input
         .lines()
         .map(|n| n.parse::<i32>().unwrap())
