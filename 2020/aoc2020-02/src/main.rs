@@ -46,7 +46,6 @@ fn valid_password_entry_2(input: &str) -> Result<bool, Box<dyn std::error::Error
 
     let pos1_set = pass.get(pos1).unwrap_or(&0) == c;
     let pos2_set = pass.get(pos2).unwrap_or(&0) == c;
-    println!("{} {} {} {:?}\n{}", pos1, pos2, c, pass, pos1_set ^ pos2_set);
 
     return Ok(pos1_set ^ pos2_set);
 }

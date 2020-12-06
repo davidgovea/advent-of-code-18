@@ -106,7 +106,7 @@ fn discover_noun_and_verb(
     desired_result: i32,
     initial_memory: &Vec<i32>,
 ) -> Result<(i32, i32), Box<dyn Error>> {
-    'search: for noun in 0..100 {
+    for noun in 0..100 {
         for verb in 0..100 {
             match perform_computation(noun, verb, &initial_memory)? {
                 result if result == desired_result => {

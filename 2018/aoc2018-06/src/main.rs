@@ -59,7 +59,7 @@ fn enumerate_points(coord: &Coord, distance: i32) -> Vec<Coord> {
             points.push((coord.0 - dx, coord.1 + dy));
             points.push((coord.0 + dx, coord.1 - dy));
         }
-        if (distance != 0) {
+        if distance != 0 {
             points.push((coord.0 - dx, coord.1 - dy));
         }
     }
@@ -99,10 +99,7 @@ fn part1(input: &str) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let mut cells_by_id: HashMap<CoordId, Vec<&CellClaim>> = HashMap::new();
-    let mut current_id: CoordId = Default::default();
-    for (cell_coord, state) in grid.iter() {
-        let is_boundary = cell_coord.0 == min_x || cell_coord.0 == max_y ||
-                          cell_coord.1 == min_y || cell_coord.1 == max_y;
+    for (_, state) in grid.iter() {
         match state {
             CellState::Claimed(c) => {
                 cells_by_id.entry(c.coord_id).or_default().push(c);
@@ -112,7 +109,7 @@ fn part1(input: &str) -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let mut interior_area_totals = cells_by_id.iter()
-        .filter(|(id, claims)| {
+        .filter(|(_, claims)| {
             for claim in claims.iter() {
                 let is_boundary = claim.pos.0 == min_x || claim.pos.0 == max_y ||
                                   claim.pos.1 == min_y || claim.pos.1 == max_y;
@@ -144,7 +141,7 @@ fn part2(input: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut found_area = 0;
 
     while cells_reached < search_area {
-        for (coord_id, coord) in &coords_list {
+        for (_, coord) in &coords_list {
             let points_to_visit = enumerate_points(coord, search_distance);
 
             for point in points_to_visit {
@@ -161,7 +158,8 @@ fn part2(input: &str) -> Result<(), Box<dyn std::error::Error>> {
                                 found_area += 1;
                             }
                         } else {
-                            grid.insert(point, (count + 1, new_total));
+                            let new_count = count + 1;
+                            grid.insert(point, (new_count, new_total));
                         }
                     },
                     None => {

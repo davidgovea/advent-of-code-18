@@ -23,7 +23,6 @@ fn reverse_polarity(c: char) -> String {
 
 fn reduce_polymer(input: &str) -> Result<String, Box<dyn std::error::Error>> {
     let mut final_reduction = input.trim().chars().collect::<Vec<_>>();
-    let starting_length = final_reduction.len();
 
     let mut search_index = 0;
     loop {
@@ -62,7 +61,6 @@ fn part1(input: &str) -> Result<(), Box<dyn std::error::Error>> {
 
 fn part2(input: &str) -> Result<(), Box<dyn std::error::Error>> {
 
-    let starting_length = input.trim().len();
     let base_polymer = reduce_polymer(input)?;
 
     let mut unit_tests: HashMap<String, usize> = HashMap::new();

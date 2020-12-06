@@ -10,11 +10,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     io::stdin().read_to_string(&mut input)?;
 
     lazy_static! {
-        static ref extract_data: Regex = Regex::new(r"Step ([A-Z]).*before step ([A-Z])").unwrap();
+        static ref EXTRACT_DATA: Regex = Regex::new(r"Step ([A-Z]).*before step ([A-Z])").unwrap();
     }
 
     let parsed_input = input.lines().map(|l| {
-        let data = extract_data.captures(l).unwrap();
+        let data = EXTRACT_DATA.captures(l).unwrap();
         Prerequisite {
             step: to_binary(data.get(2).unwrap().as_str()),
             requires: to_binary(data.get(1).unwrap().as_str()),

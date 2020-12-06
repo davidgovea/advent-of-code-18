@@ -44,7 +44,7 @@ fn part1(input: &str) -> Result<(), Box<dyn std::error::Error>> {
                 let mag = (segment.x.abs() + segment.y.abs()) as usize;
                 let dx = segment.x.signum();
                 let dy = segment.y.signum();
-                for cell in 1..=mag {
+                for _ in 1..=mag {
                     x += 1 * dx;
                     y += 1 * dy;
                     let grid_key = ((x.abs() + y.abs()) as usize, x, y);
