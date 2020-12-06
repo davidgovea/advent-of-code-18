@@ -1,0 +1,17 @@
+[package]
+name = "aoc2020"
+version = "0.1.0"
+authors = ["David Govea <govea.d@gmail.com>"]
+edition = "2018"
+
+# [dependencies]
+
+[workspace]
+members = [
+    "aoc2020-01", 
+    "aoc2020-02", 
+    "aoc2020-03", 
+    "aoc2020-04", 
+    "aoc2020-05", 
+    "aoc2020-06"
+]
