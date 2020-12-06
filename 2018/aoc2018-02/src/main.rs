@@ -1,7 +1,7 @@
 use std::io::{self, Read, Write};
 use std::collections::HashMap;
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("-- Advent of Code 2018 -- Day 2 --\n");
 
     let mut input = String::new();
@@ -13,7 +13,7 @@ fn main() -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
-fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part1(input: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let (two_repeat_count, three_repeat_count) = input
         .lines()
@@ -42,7 +42,7 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
-fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part2(input: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let mut box_ids = input.lines().collect::<Vec<_>>();
     box_ids.sort();

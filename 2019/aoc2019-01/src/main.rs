@@ -1,6 +1,6 @@
 use std::io::{self, Read, Write};
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("-- Advent of Code 2019 -- Day 1 --\n");
 
     let mut input = String::new();
@@ -25,7 +25,7 @@ fn calculate_fuel_recursive(module_mass: i32) -> i32 {
     }
 }
 
-fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part1(input: &str) -> Result<(), Box<dyn std::error::Error>> {
     let fuel_requirements = input.lines().map(|n| {
         let module_mass = n.parse::<i32>().unwrap();
         calculate_fuel(module_mass)
@@ -37,7 +37,7 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
-fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part2(input: &str) -> Result<(), Box<dyn std::error::Error>> {
     let fuel_requirements = input.lines().map(|n| {
         let module_mass = n.parse::<i32>().unwrap();
         calculate_fuel_recursive(module_mass)

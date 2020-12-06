@@ -2,7 +2,7 @@ use std::io::{self, Read, Write};
 use std::collections::HashMap;
 use regex::Regex;
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("-- Advent of Code 2018 -- Day 3 --\n");
 
     let mut input = String::new();
@@ -58,7 +58,7 @@ fn build_claim_map(claims: &Vec<FabricClaim>) -> HashMap<(u32, u32), u32> {
     squares
 }
 
-fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part1(input: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let claims = get_claims(input);
 
@@ -77,7 +77,7 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
-fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part2(input: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let claims = get_claims(input);
 

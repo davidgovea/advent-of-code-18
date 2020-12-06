@@ -1,7 +1,7 @@
 use std::io::{self, Read, Write};
 use std::collections::HashMap;
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("-- Advent of Code 2018 -- Day 5 --\n");
 
     let mut input = String::new();
@@ -21,7 +21,7 @@ fn reverse_polarity(c: char) -> String {
     }
 }
 
-fn reduce_polymer(input: &str) -> Result<String, Box<std::error::Error>> {
+fn reduce_polymer(input: &str) -> Result<String, Box<dyn std::error::Error>> {
     let mut final_reduction = input.trim().chars().collect::<Vec<_>>();
     let starting_length = final_reduction.len();
 
@@ -51,7 +51,7 @@ fn reduce_polymer(input: &str) -> Result<String, Box<std::error::Error>> {
     Ok(final_reduction.iter().collect::<String>())
 }
 
-fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part1(input: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let starting_length = input.trim().len();
     let final_polymer = reduce_polymer(input)?;
@@ -60,7 +60,7 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
-fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part2(input: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let starting_length = input.trim().len();
     let base_polymer = reduce_polymer(input)?;

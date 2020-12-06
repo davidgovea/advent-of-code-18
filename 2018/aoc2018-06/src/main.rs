@@ -1,7 +1,7 @@
 use std::io::{self, Read, Write};
 use std::collections::HashMap;
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("-- Advent of Code 2018 -- Day X --\n");
 
     let mut input = String::new();
@@ -66,7 +66,7 @@ fn enumerate_points(coord: &Coord, distance: i32) -> Vec<Coord> {
     points
 }
 
-fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part1(input: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let coords_list = parse_coords(input);
     let ((min_x, min_y), (max_x, max_y)) = get_bounding_rect(&coords_list);
@@ -130,7 +130,7 @@ fn part1(input: &str) -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
-fn part2(input: &str) -> Result<(), Box<std::error::Error>> {
+fn part2(input: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     let coords_list = parse_coords(input);
     let coord_count = coords_list.len();

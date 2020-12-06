@@ -3,7 +3,7 @@ use std::io::{self, Read, Write};
 use regex::Regex;
 use std::collections::HashMap;
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("-- Advent of Code 2018 -- Day 7 --\n");
 
     let mut input = String::new();
@@ -67,7 +67,7 @@ fn binary_digit_iterator(digits: u32) -> BinaryDigitIterator {
     BinaryDigitIterator { digits: 0, max_digits: digits }
 }
 
-fn part1(input: &Vec<Prerequisite>) -> Result<(), Box<std::error::Error>> {
+fn part1(input: &Vec<Prerequisite>) -> Result<(), Box<dyn std::error::Error>> {
 
     let compound_requirements: HashMap<u32, u32> = input.iter()
         .fold(HashMap::new(), |mut map, prereq| {
@@ -109,7 +109,7 @@ fn part1(input: &Vec<Prerequisite>) -> Result<(), Box<std::error::Error>> {
     Ok(())
 }
 
-fn part2(input: &Vec<Prerequisite>) -> Result<(), Box<std::error::Error>> {
+fn part2(input: &Vec<Prerequisite>) -> Result<(), Box<dyn std::error::Error>> {
 
     writeln!(io::stdout(), "result {:?}", ())?;
     Ok(())

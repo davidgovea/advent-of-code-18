@@ -3,7 +3,7 @@ use std::io::{self, Read, Write};
 use regex::Regex;
 use std::collections::HashMap;
 
-fn main() -> Result<(), Box<std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("-- Advent of Code 2018 -- Day 3 --\n");
 
     let mut input = String::new();
@@ -101,7 +101,7 @@ fn get_sleep_timesheets(events: &Vec<GuardEvent>) -> SleepTimesheets {
     sleep_timesheets
 }
 
-fn part1(sleep_timesheets: &SleepTimesheets) -> Result<(), Box<std::error::Error>> {
+fn part1(sleep_timesheets: &SleepTimesheets) -> Result<(), Box<dyn std::error::Error>> {
     
     // Sum all timecards, and sort ascending
     let mut minute_totals: Vec<(GuardId, u32)> = sleep_timesheets
@@ -127,7 +127,7 @@ fn part1(sleep_timesheets: &SleepTimesheets) -> Result<(), Box<std::error::Error
     Ok(())
 }
 
-fn part2(sleep_timesheets: &SleepTimesheets) -> Result<(), Box<std::error::Error>> {
+fn part2(sleep_timesheets: &SleepTimesheets) -> Result<(), Box<dyn std::error::Error>> {
 
     let mut top_minutes_slept = sleep_timesheets
         .iter()
