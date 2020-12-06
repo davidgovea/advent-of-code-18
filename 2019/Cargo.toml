@@ -4,7 +4,9 @@ version = "0.1.0"
 authors = ["David Govea <govea.d@gmail.com>"]
 edition = "2018"
 
-# [dependencies]
+[dependencies]
+maplit = "1"
+lazy_static = "1"
 
 [workspace]
 members = [
