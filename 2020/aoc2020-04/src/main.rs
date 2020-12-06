@@ -2,6 +2,7 @@
 extern crate lazy_static;
 #[macro_use]
 extern crate maplit;
+use aoc2020::input;
 use regex::Regex;
 use std::collections::HashSet;
 use std::io::{self, Read, Write};
@@ -19,19 +20,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn parse_input(input: &str) -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    let mut passports: Vec<String> = Vec::new();
-    let mut streaming_buffer: Vec<String> = Vec::new();
-    for line in input.lines() {
-        if line != "" {
-            streaming_buffer.push(String::from(line));
-        } else {
-            passports.push(streaming_buffer.join(" "));
-            streaming_buffer.clear();
-        }
-    }
-    if streaming_buffer.len() > 0 {
-        passports.push(streaming_buffer.join(" "));
-    }
+    let passport_groups = input::parse_groups(input)?;
+    let passports: Vec<String> = passport_groups
+        .iter()
+        .map(|p| p.join(" "))
+        .collect::<Vec<_>>();
 
     return Ok(passports);
 }
