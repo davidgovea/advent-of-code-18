@@ -9,6 +9,126 @@ enum OpCode {
     Halt = 99,
 }
 
+pub struct IntcodeVM<'a> {
+    pub program_memory: &'a mut Vec<i32>,
+    pub handle_input: Option<fn(Option<&i32>) -> i32>,
+    instruction_pointer: usize,
+    input: Option<i32>,
+}
+
+impl<'a> IntcodeVM<'a> {
+    pub fn new(
+        mem: &'a mut std::vec::Vec<i32>,
+        handle_input: Option<fn(Option<&i32>) -> i32>,
+    ) -> Self {
+        Self {
+            program_memory: mem,
+            handle_input: handle_input,
+            instruction_pointer: 0,
+            input: None,
+        }
+    }
+    pub fn run(&mut self) -> Vec<i32> {
+        let mut outputs: Vec<i32> = Vec::new();
+        while let Some(interrupt) = self.next() {
+            match interrupt {
+                Some(out) => outputs.push(out),
+                None => match self.handle_input {
+                    Some(handler) => {
+                        self.input = Some(handler(outputs.last()));
+                    }
+                    None => {
+                        panic!("Input requested, but no handler specified");
+                    }
+                },
+            };
+        }
+        outputs
+    }
+}
+
+impl Iterator for IntcodeVM<'_> {
+    type Item = Option<i32>;
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            let (op_code, param_modes) =
+                parse_op_code(self.program_memory[self.instruction_pointer]).unwrap();
+
+            match op_code {
+                OpCode::Halt => break,
+                OpCode::Add => {
+                    let parameters =
+                        get_parameters(self.instruction_pointer, 3, &self.program_memory).unwrap();
+                    let operand_1 = resolve_parameter(
+                        parameters.get(0).unwrap(),
+                        param_modes.get(0).unwrap(),
+                        &self.program_memory,
+                    )
+                    .unwrap();
+                    let operand_2 = resolve_parameter(
+                        parameters.get(1).unwrap(),
+                        param_modes.get(1).unwrap(),
+                        &self.program_memory,
+                    )
+                    .unwrap();
+                    let dest_pointer = *parameters.get(2).unwrap() as usize;
+                    self.program_memory[dest_pointer] = operand_1 + operand_2;
+                    self.instruction_pointer += 4;
+                }
+                OpCode::Multiply => {
+                    let parameters =
+                        get_parameters(self.instruction_pointer, 3, &self.program_memory).unwrap();
+                    let operand_1 = resolve_parameter(
+                        parameters.get(0).unwrap(),
+                        param_modes.get(0).unwrap(),
+                        &self.program_memory,
+                    )
+                    .unwrap();
+                    let operand_2 = resolve_parameter(
+                        parameters.get(1).unwrap(),
+                        param_modes.get(1).unwrap(),
+                        &self.program_memory,
+                    )
+                    .unwrap();
+                    let dest_pointer = *parameters.get(2).unwrap() as usize;
+                    self.program_memory[dest_pointer] = operand_1 * operand_2;
+                    self.instruction_pointer += 4;
+                }
+                OpCode::Input => {
+                    let parameters =
+                        get_parameters(self.instruction_pointer, 1, &self.program_memory).unwrap();
+                    match self.input {
+                        Some(val) => {
+                            let target = *parameters.get(0).unwrap() as usize;
+                            // println!("INPUT={} AT: {}", val, target);
+                            self.input = None;
+                            self.program_memory[target] = val;
+                            self.instruction_pointer += 2;
+                        }
+                        None => return Some(None)
+                        
+                    }
+                }
+                OpCode::Output => {
+                    let parameters =
+                        get_parameters(self.instruction_pointer, 1, &self.program_memory).unwrap();
+                    let output = resolve_parameter(
+                        parameters.get(0).unwrap(),
+                        param_modes.get(0).unwrap(),
+                        &self.program_memory,
+                    )
+                    .unwrap();
+                    // println!("OUTPUT: {}", output);
+                    self.instruction_pointer += 2;
+
+                    return Some(Some(output));
+                }
+            }
+        }
+        None
+    }
+}
+
 lazy_static! {
     static ref ARGUMENT_COUNTS: HashMap<OpCode, usize> = hashmap! {
         OpCode::Add => 3,
@@ -20,16 +140,14 @@ lazy_static! {
 }
 
 fn get_parameters(
-    instruction_pointer: &mut usize,
+    instruction_pointer: usize,
     count: usize,
     program_memory: &Vec<i32>,
 ) -> Result<Vec<i32>, Box<dyn std::error::Error>> {
     let mut results = Vec::new();
-    *instruction_pointer += 1;
-    for _param_i in 0..count {
-        let param_value = program_memory[*instruction_pointer];
+    for param_i in 1..=count {
+        let param_value = program_memory[instruction_pointer + param_i];
         results.push(param_value);
-        *instruction_pointer += 1;
     }
     Ok(results)
 }
@@ -91,72 +209,9 @@ pub fn parse_intcode_program(input: &str) -> Result<Vec<i32>, Box<dyn std::error
 pub fn run_intcode_program(
     program_memory: &mut Vec<i32>,
 ) -> Result<&Vec<i32>, Box<dyn std::error::Error>> {
-    let mut instruction_pointer = 0;
-    loop {
-        let (op_code, param_modes) = parse_op_code(program_memory[instruction_pointer])?;
-        // println!("MEM: {:?}", program_memory);
-        // println!("PTR: {} | Parsed opcode & modes {:?} {:?}", instruction_pointer, op_code, param_modes);
-        match op_code {
-            OpCode::Halt => break,
-            OpCode::Add => {
-                let parameters = get_parameters(&mut instruction_pointer, 3, &program_memory)?;
-                // println!("ADD Params: {:?}", parameters);
-
-                let operand_1 = resolve_parameter(
-                    parameters.get(0).unwrap(),
-                    param_modes.get(0).unwrap(),
-                    &program_memory,
-                )?;
-                let operand_2 = resolve_parameter(
-                    parameters.get(1).unwrap(),
-                    param_modes.get(1).unwrap(),
-                    &program_memory,
-                )?;
-                let dest_pointer = *parameters.get(2).unwrap() as usize;
-                // println!("ADD Setting target {}: to {}+{} = {}", dest_pointer, operand_1, operand_2, operand_1 + operand_2);
-                program_memory[dest_pointer] = operand_1 + operand_2;
-            }
-            OpCode::Multiply => {
-                let parameters = get_parameters(&mut instruction_pointer, 3, &program_memory)?;
-                // println!("MULT Params: {:?}", parameters);
-
-                let operand_1 = resolve_parameter(
-                    parameters.get(0).unwrap(),
-                    param_modes.get(0).unwrap(),
-                    &program_memory,
-                )?;
-                let operand_2 = resolve_parameter(
-                    parameters.get(1).unwrap(),
-                    param_modes.get(1).unwrap(),
-                    &program_memory,
-                )?;
-                let dest_pointer = *parameters.get(2).unwrap() as usize;
-                // println!("MULT Setting target {}: to {}+{} = {}", dest_pointer, operand_1, operand_2, operand_1 * operand_2);
-                program_memory[dest_pointer] = operand_1 * operand_2;
-            }
-            OpCode::Input => {
-                let parameters = get_parameters(&mut instruction_pointer, 1, &program_memory)?;
-                // println!("INPUT Params: {:?}", parameters);
-
-                let target = *parameters.get(0).unwrap() as usize;
-                // println!("FORCING INPUT=1 AT: {}", target);
-                program_memory[target] = 1;
-            }
-            OpCode::Output => {
-                let parameters = get_parameters(&mut instruction_pointer, 1, &program_memory)?;
-                // println!("OUTPUT Params: {:?}", parameters);
-
-                let output = resolve_parameter(
-                    parameters.get(0).unwrap(),
-                    param_modes.get(0).unwrap(),
-                    &program_memory,
-                )?;
-                println!("OUTPUT: {}", output);
-            }
-        }
-    }
-
-    Ok(program_memory)
+    let mut vm = IntcodeVM::new(program_memory, None);
+    vm.run();
+    Ok(vm.program_memory)
 }
 
 pub fn perform_computation(
@@ -170,9 +225,10 @@ pub fn perform_computation(
     program_memory[1] = noun;
     program_memory[2] = verb;
 
-    run_intcode_program(&mut program_memory)?;
+    let mut vm = IntcodeVM::new(&mut program_memory, None);
+    vm.run();
 
-    Ok(program_memory[0])
+    Ok(vm.program_memory[0])
 }
 
 #[cfg(test)]
@@ -186,6 +242,17 @@ mod tests {
         let mut memory = parse_intcode_program(MOCK_INPUT_1).unwrap();
         run_intcode_program(&mut memory).unwrap();
         assert_eq!(memory[..], [3500, 9, 10, 70, 2, 3, 11, 0, 99, 30, 40, 50]);
+    }
+
+    #[test]
+    fn test_sample_1_struct() {
+        let mut memory = parse_intcode_program(MOCK_INPUT_1).unwrap();
+        let mut vm = IntcodeVM::new(&mut memory, None);
+        vm.run();
+        assert_eq!(
+            vm.program_memory[..],
+            [3500, 9, 10, 70, 2, 3, 11, 0, 99, 30, 40, 50]
+        );
     }
 
     #[test]

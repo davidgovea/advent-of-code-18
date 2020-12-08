@@ -1,3 +1,4 @@
+use aoc2019::intcode::IntcodeVM;
 use std::io::{self, Read, Write};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -15,9 +16,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn part1(input: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut initial_memory = aoc2019::intcode::parse_intcode_program(input)?;
 
-    aoc2019::intcode::run_intcode_program(&mut initial_memory)?;
+    let mut vm = IntcodeVM::new(&mut initial_memory, Some(|_last_output| 1));
+    let outputs = vm.run();
 
-    // writeln!(io::stdout(), "result {:?}", ())?;
+    writeln!(io::stdout(), "outputs: {:?}", outputs)?;
 
     Ok(())
 }
@@ -26,7 +28,6 @@ fn part2(input: &str) -> Result<(), Box<dyn std::error::Error>> {
     // let initial_memory = aoc2019::intcode::parse_intcode_program(input)?;
 
     // let result_1202 = aoc2019::intcode::perform_computation(12, 2, &initial_memory)?;
-
 
     // writeln!(io::stdout(), "result {:?}", ())?;
 
