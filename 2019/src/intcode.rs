@@ -386,6 +386,7 @@ mod tests {
         let outputs = vm.run();
         assert_eq!(outputs[..], [1]);
 
+        let mut memory = parse_intcode_program("3,9,8,9,10,9,4,9,99,-1,8").unwrap();
         let mut vm = IntcodeVM::new(&mut memory, Some(|_| 7));
         let outputs = vm.run();
         assert_eq!(outputs[..], [0]);
@@ -398,6 +399,7 @@ mod tests {
         let outputs = vm.run();
         assert_eq!(outputs[..], [1]);
 
+        let mut memory = parse_intcode_program("3,3,1108,-1,8,3,4,3,99").unwrap();
         let mut vm = IntcodeVM::new(&mut memory, Some(|_| 7));
         let outputs = vm.run();
         assert_eq!(outputs[..], [0]);
@@ -410,6 +412,7 @@ mod tests {
         let outputs = vm.run();
         assert_eq!(outputs[..], [1]);
 
+        let mut memory = parse_intcode_program("3,9,7,9,10,9,4,9,99,-1,8").unwrap();
         let mut vm = IntcodeVM::new(&mut memory, Some(|_| 9));
         let outputs = vm.run();
         assert_eq!(outputs[..], [0]);
@@ -422,8 +425,53 @@ mod tests {
         let outputs = vm.run();
         assert_eq!(outputs[..], [1]);
 
+        let mut memory = parse_intcode_program("3,3,1107,-1,8,3,4,3,99").unwrap();
         let mut vm = IntcodeVM::new(&mut memory, Some(|_| 10));
         let outputs = vm.run();
         assert_eq!(outputs[..], [0]);
+    }
+
+    #[test]
+    fn test_jump_nonzero_position() {
+        let mut memory = parse_intcode_program("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9").unwrap();
+        let mut vm = IntcodeVM::new(&mut memory, Some(|_| 1));
+        let outputs = vm.run();
+        assert_eq!(outputs[..], [1]);
+
+        let mut memory = parse_intcode_program("3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9").unwrap();
+        let mut vm = IntcodeVM::new(&mut memory, Some(|_| 0));
+        let outputs = vm.run();
+        assert_eq!(outputs[..], [0]);
+    }
+
+    #[test]
+    fn test_jump_nonzero_immediate() {
+        let mut memory = parse_intcode_program("3,3,1105,-1,9,1101,0,0,12,4,12,99,1").unwrap();
+        let mut vm = IntcodeVM::new(&mut memory, Some(|_| 2));
+        let outputs = vm.run();
+        assert_eq!(outputs[..], [1]);
+
+        let mut memory = parse_intcode_program("3,3,1105,-1,9,1101,0,0,12,4,12,99,1").unwrap();
+        let mut vm = IntcodeVM::new(&mut memory, Some(|_| 0));
+        let outputs = vm.run();
+        assert_eq!(outputs[..], [0]);
+    }
+
+    #[test]
+    fn test_jump_eq_8() {
+        let mut memory = parse_intcode_program("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99").unwrap();
+        let mut vm = IntcodeVM::new(&mut memory, Some(|_| 4));
+        let outputs = vm.run();
+        assert_eq!(outputs[..], [999]);
+
+        let mut memory = parse_intcode_program("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99").unwrap();
+        let mut vm = IntcodeVM::new(&mut memory, Some(|_| 8));
+        let outputs = vm.run();
+        assert_eq!(outputs[..], [1000]);
+
+        let mut memory = parse_intcode_program("3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99").unwrap();
+        let mut vm = IntcodeVM::new(&mut memory, Some(|_| 10));
+        let outputs = vm.run();
+        assert_eq!(outputs[..], [1001]);
     }
 }
