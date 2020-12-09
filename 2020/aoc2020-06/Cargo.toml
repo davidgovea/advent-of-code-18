@@ -8,5 +8,3 @@ edition = "2018"
 
 [dependencies]
 aoc2020 = { path = ".." }
-# lazy_static = "1"
-# regex = "1"
