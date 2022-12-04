@@ -1,0 +1,58 @@
+use std::{collections::HashSet};
+
+pub fn part_one(input: &str) -> Option<u32> {
+    let priorities = input.lines().map(|rucksack| {
+        let compartment_size = rucksack.len() / 2;
+
+        // Split string into 2 HashSets at midpoint
+        let (compartment1, compartment2) = rucksack.chars().enumerate().fold(
+            (HashSet::new(), HashSet::new()),
+            |(mut c1, mut c2), (index, item)| {
+                match index < compartment_size {
+                    true => c1.insert(item),
+                    false => c2.insert(item),
+                };
+                (c1, c2)
+            },
+        );
+
+        // Find the (first) item present in both: problem states we will always have 1 only
+        let error_item = compartment1.intersection(&compartment2).next().unwrap();
+
+        // Transform ascii values to desired ranges
+        match *error_item as u32 {
+            lower if lower >= 97 => lower - 96, // a-z maps to 1-26
+            upper if upper >= 65 => upper - 38, // A-Z maps to 27-52
+            _ => 0, // other characters map to 0
+        }
+    });
+
+    Some(priorities.sum())
+}
+
+pub fn part_two(input: &str) -> Option<u32> {
+    None
+}
+
+fn main() {
+    let input = &aoc2022::read_file("inputs", 3);
+    aoc2022::solve!(1, part_one, input);
+    aoc2022::solve!(2, part_two, input);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part_one() {
+        let input = aoc2022::read_file("examples", 3);
+        assert_eq!(part_one(&input), Some(157));
+    }
+
+    #[test]
+    fn test_part_two() {
+        let input = aoc2022::read_file("examples", 3);
+        assert_eq!(part_two(&input), None);
+    }
+}
