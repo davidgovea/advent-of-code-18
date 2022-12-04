@@ -1,9 +1,9 @@
 [package]
-name = "advent_of_code"
-version = "0.8.0"
-authors = ["Felix Spöttel <1682504+fspoettel@users.noreply.github.com>"]
+name = "aoc2022"
+version = "0.1.0"
+authors = ["David Govea <govea.d@gmail.com>"]
 edition = "2021"
-default-run = "advent_of_code"
+default-run = "aoc2022"
 publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

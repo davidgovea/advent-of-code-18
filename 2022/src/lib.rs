@@ -15,7 +15,7 @@ pub const ANSI_RESET: &str = "\x1b[0m";
 #[macro_export]
 macro_rules! solve {
     ($part:expr, $solver:ident, $input:expr) => {{
-        use advent_of_code::{ANSI_BOLD, ANSI_ITALIC, ANSI_RESET};
+        use aoc2022::{ANSI_BOLD, ANSI_ITALIC, ANSI_RESET};
         use std::fmt::Display;
         use std::time::Instant;
 

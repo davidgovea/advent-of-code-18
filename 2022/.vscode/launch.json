@@ -7,11 +7,11 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'advent_of_code'",
+            "name": "Debug unit tests in executable 'aoc2022'",
             "cargo": {
-                "args": ["test", "--no-run", "--bin=advent_of_code", "--package=advent_of_code"],
+                "args": ["test", "--no-run", "--bin=aoc2022", "--package=aoc2022"],
                 "filter": {
-                    "name": "advent_of_code",
+                    "name": "aoc2022",
                     "kind": "bin"
                 }
             },
@@ -21,11 +21,11 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'advent_of_code'",
+            "name": "Debug executable 'aoc2022'",
             "cargo": {
-                "args": ["build", "--bin=advent_of_code", "--package=advent_of_code"],
+                "args": ["build", "--bin=aoc2022", "--package=aoc2022"],
                 "filter": {
-                    "name": "advent_of_code",
+                    "name": "aoc2022",
                     "kind": "bin"
                 }
             },
@@ -35,11 +35,11 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in library 'advent_of_code'",
+            "name": "Debug unit tests in library 'aoc2022'",
             "cargo": {
-                "args": ["test", "--no-run", "--lib", "--package=advent_of_code"],
+                "args": ["test", "--no-run", "--lib", "--package=aoc2022"],
                 "filter": {
-                    "name": "advent_of_code",
+                    "name": "aoc2022",
                     "kind": "lib"
                 }
             },
