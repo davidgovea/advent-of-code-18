@@ -50,7 +50,7 @@ fn parse_layout(layout: &str) -> Layout {
     state
 }
 
-fn perform_move(from: usize, to: usize, count: usize, layout: &mut Layout) -> () {
+fn perform_move(count: usize, from: usize, to: usize, layout: &mut Layout) -> () {
     let mut moved_values: Vec<char>;
     {
         let from_stack = layout.get_mut(&from).unwrap();
@@ -61,45 +61,66 @@ fn perform_move(from: usize, to: usize, count: usize, layout: &mut Layout) -> ()
     to_stack.append(&mut moved_values);
 }
 
-fn run_instructions(instructions: &str, layout: &mut Layout) -> () {
+fn parse_instruction(line: &str) -> [usize; 3] {
     lazy_static! {
         static ref INSTRUCTION_EXTRACT: Regex =
             Regex::new(r"move (\d+) from (\d+) to (\d+)").unwrap();
     }
 
-    for instruction in instructions.lines() {
-        let [count, from, to]: [usize; 3] = INSTRUCTION_EXTRACT
-            .captures(instruction)
-            .unwrap()
-            .iter()
-            .skip(1)
-            .map(|d| d.unwrap().as_str().parse::<usize>().unwrap())
-            .collect::<Vec<_>>()
-            .try_into()
-            .ok()
-            .unwrap();
+    INSTRUCTION_EXTRACT
+        .captures(line)
+        .unwrap()
+        .iter()
+        .skip(1)
+        .map(|d| d.unwrap().as_str().parse::<usize>().unwrap())
+        .collect::<Vec<_>>()
+        .try_into()
+        .ok()
+        .unwrap()
+}
 
-        perform_move(from, to, count, layout);
-    }
+fn print_top_crates(layout: Layout) -> String {
+    (1..=layout.len())
+        .map(|c| String::from(*layout.get(&c).unwrap().last().unwrap()))
+        .collect::<Vec<_>>()
+        .join("")
 }
 
 pub fn part_one(input: &str) -> Option<String> {
-    let [layout, instructions] = parse_input(input);
+    let [initial_layout, instructions] = parse_input(input);
+    let mut layout = parse_layout(initial_layout);
 
-    let mut state = parse_layout(layout);
+    for instruction in instructions.lines() {
+        let [count, from, to] = parse_instruction(instruction);
 
-    run_instructions(instructions, &mut state);
+        perform_move(count, from, to, &mut layout);
+    }
 
-    Some(
-        (1..=state.len())
-            .map(|c| String::from(*state.get(&c).unwrap().last().unwrap()))
-            .collect::<Vec<_>>()
-            .join(""),
-    )
+    Some(print_top_crates(layout))
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+fn perform_move_over9000(count: usize, from: usize, to: usize, layout: &mut Layout) -> () {
+    let mut moved_values: Vec<char>;
+    {
+        let from_stack = layout.get_mut(&from).unwrap();
+        moved_values = from_stack.drain(from_stack.len() - count..).collect();
+    }
+
+    let to_stack = layout.get_mut(&to).unwrap();
+    to_stack.append(&mut moved_values);
+}
+
+pub fn part_two(input: &str) -> Option<String> {
+    let [initial_layout, instructions] = parse_input(input);
+    let mut layout = parse_layout(initial_layout);
+
+    for instruction in instructions.lines() {
+        let [count, from, to] = parse_instruction(instruction);
+
+        perform_move_over9000(count, from, to, &mut layout);
+    }
+
+    Some(print_top_crates(layout))
 }
 
 fn main() {
@@ -121,6 +142,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc2022::read_file("examples", 5);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(String::from("MCD")));
     }
 }
