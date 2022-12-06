@@ -7,9 +7,9 @@ enum Play {
 
 #[derive(Debug, PartialEq)]
 enum Result {
-    Lose,
-    Draw,
-    Win,
+    Draw = 0,
+    Win = 1,
+    Lose = 2,
 }
 
 fn play_round(opponent_play: Play, my_play: Play) -> Result {
