@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate lazy_static;
-use regex::Regex;
 use std::collections::HashMap;
 
 type Layout<'a> = HashMap<usize, Vec<char>>;
@@ -62,21 +59,8 @@ fn perform_move(count: usize, from: usize, to: usize, layout: &mut Layout) -> ()
 }
 
 fn parse_instruction(line: &str) -> [usize; 3] {
-    lazy_static! {
-        static ref INSTRUCTION_EXTRACT: Regex =
-            Regex::new(r"move (\d+) from (\d+) to (\d+)").unwrap();
-    }
-
-    INSTRUCTION_EXTRACT
-        .captures(line)
-        .unwrap()
-        .iter()
-        .skip(1)
-        .map(|d| d.unwrap().as_str().parse::<usize>().unwrap())
-        .collect::<Vec<_>>()
-        .try_into()
-        .ok()
-        .unwrap()
+    let words = line.split_whitespace().collect::<Vec<_>>();
+    [words.get(1), words.get(3), words.get(5)].map(|d| d.unwrap().parse().unwrap())
 }
 
 fn print_top_crates(layout: Layout) -> String {
