@@ -1,33 +1,99 @@
 name: Update readme ⭐️ progress
 
 on:
-    # schedule:
-    #     - cron: "13 */6 * * *" # Every 6 hours
-    workflow_dispatch:
-
-defaults:
-  run:
-    working-directory: 2022
+  schedule:
+    - cron: "13 */6 * * *" # Every 6 hours
+  workflow_dispatch:
 
 jobs:
-    update-readme:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v3
-              if: ${{ env.AOC_ENABLED }}
-              env:
-                  AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
-            - uses: k2bd/advent-readme-stars@v1
-              if: ${{ env.AOC_ENABLED }}
-              env:
-                  AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
-              with:
-                  userId: ${{ secrets.AOC_USER_ID }}
-                  sessionCookie: ${{ secrets.AOC_SESSION }}
-                  year: ${{ secrets.AOC_YEAR }}
-            - uses: stefanzweifel/git-auto-commit-action@v4
-              if: ${{ env.AOC_ENABLED }}
-              env:
-                  AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
-              with:
-                  commit_message: "update readme progess"
+  update-readme-2022:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+      - uses: k2bd/advent-readme-stars@v1
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+        with:
+          userId: ${{ secrets.AOC_USER_ID }}
+          sessionCookie: ${{ secrets.AOC_SESSION }}
+          year: 2022
+          tableMarker: "<!--- advent_readme_stars_2022 table --->"
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+        with:
+          commit_message: "update readme progess"
+
+  update-readme-2020:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+      - uses: k2bd/advent-readme-stars@v1
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+        with:
+          userId: ${{ secrets.AOC_USER_ID }}
+          sessionCookie: ${{ secrets.AOC_SESSION }}
+          year: 2020
+          tableMarker: "<!--- advent_readme_stars_2020 table --->"
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+        with:
+          commit_message: "update readme progess"
+
+  update-readme-2019:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+      - uses: k2bd/advent-readme-stars@v1
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+        with:
+          userId: ${{ secrets.AOC_USER_ID }}
+          sessionCookie: ${{ secrets.AOC_SESSION }}
+          year: 2019
+          tableMarker: "<!--- advent_readme_stars_2019 table --->"
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+        with:
+          commit_message: "update readme progess"
+
+  update-readme-2018:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+      - uses: k2bd/advent-readme-stars@v1
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+        with:
+          userId: ${{ secrets.AOC_USER_ID }}
+          sessionCookie: ${{ secrets.AOC_SESSION }}
+          year: 2018
+          tableMarker: "<!--- advent_readme_stars_2018 table --->"
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        if: ${{ env.AOC_ENABLED }}
+        env:
+          AOC_ENABLED: ${{ secrets.AOC_ENABLED }}
+        with:
+          commit_message: "update readme progess"
