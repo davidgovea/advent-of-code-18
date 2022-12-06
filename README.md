@@ -68,3 +68,14 @@ $ cargo run --release < input.txt
 Went with a template this year - the crate-per-challenge approach is nice but kinda boilerplatey. Wanted to jump into latest Rust version, so I am using: https://github.com/fspoettel/advent-of-code-rust
 
 <!--- advent_readme_stars_2022 table --->
+## 2022 Results
+
+| Day | Part 1 | Part 2 |
+| :---: | :---: | :---: |
+| [Day 1](https://adventofcode.com/2022/day/1) | ⭐ | ⭐ |
+| [Day 2](https://adventofcode.com/2022/day/2) | ⭐ | ⭐ |
+| [Day 3](https://adventofcode.com/2022/day/3) | ⭐ | ⭐ |
+| [Day 4](https://adventofcode.com/2022/day/4) | ⭐ | ⭐ |
+| [Day 5](https://adventofcode.com/2022/day/5) | ⭐ | ⭐ |
+| [Day 6](https://adventofcode.com/2022/day/6) | ⭐ | ⭐ |
+<!--- advent_readme_stars_2022 table --->
