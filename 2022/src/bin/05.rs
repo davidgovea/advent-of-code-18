@@ -13,35 +13,25 @@ fn parse_input(input: &str) -> [&str; 2] {
 
 fn parse_layout(layout: &str) -> Layout {
     let mut layout_iter = layout.lines().rev();
-    let columns = layout_iter
-        .next()
-        .unwrap()
-        .split_whitespace()
-        .map(|n| n.parse::<usize>().unwrap())
-        .collect::<Vec<_>>();
+    let columns = layout_iter.next().unwrap().split_whitespace().count();
 
     let mut state = HashMap::new();
 
-    columns.clone().into_iter().for_each(|name| {
-        state.insert(name, Vec::new());
+    (1..=columns).for_each(|i| {
+        state.insert(i, Vec::new());
     });
 
     layout_iter.for_each(|row| {
         let chars = row.as_bytes();
-        columns
-            .clone()
-            .into_iter()
-            .enumerate()
-            .for_each(|(i, col_name)| {
-                let target_index = i * 4 + 1;
-                match chars.get(target_index) {
-                    Some(c) if !(*c as char).is_whitespace() => state
-                        .entry(col_name)
-                        .or_insert_with(Vec::new)
-                        .push(*c as char),
-                    _ => (),
-                };
-            });
+        (0..columns).for_each(|i| {
+            let target_index = i * 4 + 1;
+            match chars.get(target_index) {
+                Some(c) if !(*c as char).is_whitespace() => {
+                    state.entry(i + 1).or_insert_with(Vec::new).push(*c as char)
+                }
+                _ => (),
+            };
+        });
     });
 
     state
