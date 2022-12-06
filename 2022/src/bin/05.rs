@@ -32,14 +32,16 @@ fn parse_layout(layout: &str) -> Layout {
 }
 
 fn perform_move(count: usize, from: usize, to: usize, layout: &mut Layout) -> () {
-    let mut moved_values: Vec<char>;
-    {
-        let from_stack = layout.get_mut(from - 1).unwrap();
-        moved_values = from_stack.drain(from_stack.len() - count..).rev().collect();
-    }
+    let origin = &layout.as_slice()[from - 1];
+    let move_index = origin.len() - count;
 
-    let to_stack = layout.get_mut(to - 1).unwrap();
-    to_stack.append(&mut moved_values);
+    let to_move = &origin[move_index..].to_owned();
+
+    let target = layout.get_mut(to - 1).unwrap();
+    target.extend(to_move.iter().rev());
+
+    let from_stack = layout.get_mut(from - 1).unwrap();
+    from_stack.truncate(move_index);
 }
 
 fn parse_instruction(line: &str) -> [usize; 3] {
@@ -71,14 +73,16 @@ pub fn part_one(input: &str) -> Option<String> {
 }
 
 fn perform_move_over9000(count: usize, from: usize, to: usize, layout: &mut Layout) -> () {
-    let mut moved_values: Vec<char>;
-    {
-        let from_stack = layout.get_mut(from - 1).unwrap();
-        moved_values = from_stack.drain(from_stack.len() - count..).collect();
-    }
+    let origin = &layout.as_slice()[from - 1];
+    let move_index = origin.len() - count;
 
-    let to_stack = layout.get_mut(to - 1).unwrap();
-    to_stack.append(&mut moved_values);
+    let to_move = &origin[move_index..].to_owned();
+
+    let target = layout.get_mut(to - 1).unwrap();
+    target.extend(to_move.iter());
+
+    let from_stack = layout.get_mut(from - 1).unwrap();
+    from_stack.truncate(move_index);
 }
 
 pub fn part_two(input: &str) -> Option<String> {
