@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-type Layout<'a> = HashMap<usize, Vec<char>>;
+type Layout = Vec<Vec<char>>;
 
 fn parse_input(input: &str) -> [&str; 2] {
     input
@@ -15,11 +13,7 @@ fn parse_layout(layout: &str) -> Layout {
     let mut layout_iter = layout.lines().rev();
     let columns = layout_iter.next().unwrap().split_whitespace().count();
 
-    let mut state = HashMap::new();
-
-    (1..=columns).for_each(|i| {
-        state.insert(i, Vec::new());
-    });
+    let mut state = (0..columns).map(|_| Vec::new()).collect::<Vec<_>>();
 
     layout_iter.for_each(|row| {
         let chars = row.as_bytes();
@@ -27,7 +21,7 @@ fn parse_layout(layout: &str) -> Layout {
             let target_index = i * 4 + 1;
             match chars.get(target_index) {
                 Some(c) if !(*c as char).is_whitespace() => {
-                    state.entry(i + 1).or_insert_with(Vec::new).push(*c as char)
+                    state.get_mut(i).unwrap().push(*c as char)
                 }
                 _ => (),
             };
@@ -40,11 +34,11 @@ fn parse_layout(layout: &str) -> Layout {
 fn perform_move(count: usize, from: usize, to: usize, layout: &mut Layout) -> () {
     let mut moved_values: Vec<char>;
     {
-        let from_stack = layout.get_mut(&from).unwrap();
+        let from_stack = layout.get_mut(from - 1).unwrap();
         moved_values = from_stack.drain(from_stack.len() - count..).rev().collect();
     }
 
-    let to_stack = layout.get_mut(&to).unwrap();
+    let to_stack = layout.get_mut(to - 1).unwrap();
     to_stack.append(&mut moved_values);
 }
 
@@ -54,10 +48,13 @@ fn parse_instruction(line: &str) -> [usize; 3] {
 }
 
 fn print_top_crates(layout: Layout) -> String {
-    (1..=layout.len())
-        .map(|c| String::from(*layout.get(&c).unwrap().last().unwrap()))
-        .collect::<Vec<_>>()
-        .join("")
+    layout
+        .into_iter()
+        .map(|stack| stack.last().unwrap().to_owned())
+        .fold(String::new(), |mut res, c| {
+            res.push(c);
+            res
+        })
 }
 
 pub fn part_one(input: &str) -> Option<String> {
@@ -76,11 +73,11 @@ pub fn part_one(input: &str) -> Option<String> {
 fn perform_move_over9000(count: usize, from: usize, to: usize, layout: &mut Layout) -> () {
     let mut moved_values: Vec<char>;
     {
-        let from_stack = layout.get_mut(&from).unwrap();
+        let from_stack = layout.get_mut(from - 1).unwrap();
         moved_values = from_stack.drain(from_stack.len() - count..).collect();
     }
 
-    let to_stack = layout.get_mut(&to).unwrap();
+    let to_stack = layout.get_mut(to - 1).unwrap();
     to_stack.append(&mut moved_values);
 }
 
