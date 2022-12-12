@@ -1,53 +1,37 @@
-use std::collections::HashMap;
-use std::fs;
-use std::io::BufRead;
-use std::path::Path;
-
-// Define a trait for objects in the hierarchy
-trait HierarchyObject {
-    fn is_folder(&self) -> bool;
+// Stolen from amos
+//   https://fasterthanli.me/series/advent-of-code-2022/part-7#using-a-stack
+#[derive(Debug)]
+struct FsEntry {
+    path: String,
+    size: u64,
+    children: Vec<FsEntry>,
 }
 
-struct Folder {
-    name: String,
-    children: HashMap<String, Box<dyn HierarchyObject>>,
-}
+impl FsEntry {
+    fn total_size(&self) -> u64 {
+        self.size + self.children.iter().map(|c| c.total_size()).sum::<u64>()
+    }
 
-// Implement the HierarchyObject trait for the Folder struct
-impl HierarchyObject for Folder {
-    fn is_folder(&self) -> bool {
-        true
+    // Q: why does this return a Box? Learn more about `dyn`. And what's with the `+ '_`?
+    fn all_dirs(&self) -> Box<dyn Iterator<Item = &FsEntry> + '_> {
+        Box::new(
+            // Q: std::iter::once ? Read about chain
+            std::iter::once(self).chain(
+                self.children
+                    .iter()
+                    .filter(|c| !c.children.is_empty())
+                    .flat_map(|c| c.all_dirs()),
+            ),
+        )
     }
 }
 
-// Define a struct for files in the hierarchy
-struct File {
-    name: String,
-    size: u32,
-}
-
-// Implement the HierarchyObject trait for the File struct
-impl HierarchyObject for File {
-    fn is_folder(&self) -> bool {
-        false
-    }
-}
-
-pub fn part_one(input: &str) -> Option<u32> {
-    // let root = Folder {
-    //     name: "/".to_string(),
-    //     children: Vec::new(),
-    // };
-
-    // Parse the hierarchy and store the folders in a Vec<Box>
-    // let mut system = Vec::new();
-
-    let root_folder = Box::new(Folder {
-        name: "/".to_string(),
-        children: HashMap::new(),
-    });
-    let mut current_path: Vec<Box<Folder>> = vec![root_folder];
-    let mut file_system: Vec<Box<dyn HierarchyObject>> = vec![root_folder];
+fn parse_filesystem(input: &str) -> FsEntry {
+    let mut stack = vec![FsEntry {
+        path: "/".into(),
+        size: 0,
+        children: vec![],
+    }];
 
     for shell_log in input.split("$") {
         if shell_log == "" {
@@ -56,12 +40,9 @@ pub fn part_one(input: &str) -> Option<u32> {
         let mut lines = shell_log.lines().peekable();
         let cmd = lines.next().unwrap();
 
-        let current_folder = &current_path[current_path.len() - 1];
-
         match lines.peek() {
             Some(_) => {
-                // println!("ls {:?}", current_path);
-                // current_path[current_path.len() - 1].children = Vec::new();
+                // ls
                 for entry in lines {
                     let [size_or_dir, name]: [&str; 2] = entry
                         .split_whitespace()
@@ -70,71 +51,73 @@ pub fn part_one(input: &str) -> Option<u32> {
                         .ok() // I trust my inputs <3
                         .unwrap();
 
-                    println!("file {:?} {:?}", size_or_dir, name);
+                    match size_or_dir {
+                        "dir" => (), // Skip: use `cd` to populate dirs
+                        _ => {
+                            let size = size_or_dir.parse::<u64>().unwrap();
+                            let node = FsEntry {
+                                size,
+                                path: name.to_string(),
+                                children: vec![],
+                            };
+                            stack.last_mut().unwrap().children.push(node);
+                        }
+                    }
                 }
             }
             None => {
+                // cd
                 let dest_dir = cmd.split_whitespace().rev().next().unwrap();
-                println!("cd {:?}", dest_dir);
-
                 match dest_dir {
                     ".." => {
-                        current_path.pop();
+                        let child = stack.pop();
+                        stack.last_mut().unwrap().children.push(child.unwrap());
                     }
                     f if f != "/" => {
-                        // let target = *current_folder.children.iter().find(|c| {
-                        //     match c {
-                        //         Some(f) if f.is_folder() => true
-                        //         _ => false
-                        //     }
-                        // });
-                        // current_path.push(*current_folder.ch);
+                        let node = FsEntry {
+                            path: f.to_string(),
+                            size: 0,
+                            children: vec![],
+                        };
+                        stack.push(node);
                     }
+                    _ => (),
                 };
             }
         }
     }
-    // parse_hierarchy(Path::new(&root.name), &root, &mut folders);
 
-    // // Print the names of the folders in the hierarchy
-    // for folder in folders {
-    //     println!("{}", folder.name);
-    // }
-    None
+    let mut root = stack.pop().unwrap();
+    while let Some(mut next) = stack.pop() {
+        // Q: Why do we still need to mutate children here while popping off?
+        next.children.push(root);
+        root = next;
+    }
+
+    root
 }
 
-// fn parse_hierarchy(path: &Path, folder: &Folder, folders: &mut Vec<Box<Folder>>) {
-//     // Add the current folder to the Vec<Box>
-//     folders.push(Box::new(folder.clone()));
+pub fn part_one(input: &str) -> Option<u64> {
+    let root = parse_filesystem(input);
 
-//     // Iterate over the children of the current folder
-//     for entry in fs::read_dir(path).expect("Failed to read directory") {
-//         let entry = entry.expect("Failed to read entry");
-//         let path = entry.path();
+    Some(
+        root.all_dirs()
+            .map(|d| d.total_size())
+            .filter(|s| s < &100000)
+            .sum(),
+    )
+}
 
-//         // Check if the entry is a folder or a file
-//         if path.is_dir() {
-//             // If it is a folder, create a new Folder object and recursively parse its children
-//             let name = path.file_name().unwrap().to_str().unwrap();
-//             let mut children = Vec::new();
-//             let subfolder = Folder {
-//                 name: name.to_string(),
-//                 children: children,
-//             };
-//             parse_hierarchy(&path, &subfolder, folders);
-//         } else {
-//             // If it is a file, create a new File object and add it to the current folder's children
-//             let name = path.file_name().unwrap().to_str().unwrap();
-//             let file = File {
-//                 name: name.to_string(),
-//             };
-//             folder.children.push(Box::new(file));
-//         }
-//     }
-// }
+pub fn part_two(input: &str) -> Option<u64> {
+    let root = parse_filesystem(input);
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+    let total_size = root.total_size();
+    let min_deletion_size = total_size - (70000000 - 30000000);
+
+    let mut sizes = root.all_dirs().map(|d| d.total_size()).collect::<Vec<_>>();
+    sizes.sort();
+
+    Some(*sizes.iter().find(|s| *s > &min_deletion_size).unwrap())
 }
 
 fn main() {
@@ -150,12 +133,12 @@ mod tests {
     #[test]
     fn test_part_one() {
         let input = aoc2022::read_file("examples", 7);
-        assert_eq!(part_one(&input), None);
+        assert_eq!(part_one(&input), Some(95437));
     }
 
     #[test]
     fn test_part_two() {
         let input = aoc2022::read_file("examples", 7);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(24933642));
     }
 }
