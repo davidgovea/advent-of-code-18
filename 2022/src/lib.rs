@@ -42,9 +42,16 @@ macro_rules! solve {
 }
 
 pub fn read_file(folder: &str, day: u8) -> String {
+    read_file_custom(folder, day, None)
+}
+
+pub fn read_file_custom(folder: &str, day: u8, suffix: Option<&str>) -> String {
     let cwd = env::current_dir().unwrap();
 
-    let filepath = cwd.join("src").join(folder).join(format!("{:02}.txt", day));
+    let filepath =
+        cwd.join("src")
+            .join(folder)
+            .join(format!("{:02}{}.txt", day, suffix.unwrap_or("")));
 
     let f = fs::read_to_string(filepath);
     f.expect("could not open input file")
