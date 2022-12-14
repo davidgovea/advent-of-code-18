@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub fn part_one(input: &str) -> Option<usize> {
+fn parse_map(input: &str) -> (usize, usize, HashMap<(usize, usize), u32>) {
     let mut max_column_index = 0;
     let mut max_row_index = 0;
     let grid: HashMap<(usize, usize), u32> =
@@ -17,17 +17,46 @@ pub fn part_one(input: &str) -> Option<usize> {
                 map
             });
 
+    (max_row_index + 1, max_column_index + 1, grid)
+}
+
+fn paths_to_edge(
+    starting_coord: (usize, usize),
+    rows: usize,
+    columns: usize,
+) -> [Vec<(usize, usize)>; 4] {
+    let (start_x, start_y) = starting_coord;
+    [(0, -1), (1, 0), (0, 1), (-1, 0)].map(|(dx, dy)| {
+        let mut x = start_x as isize;
+        let mut y = start_y as isize;
+        let mut coords = vec![];
+        loop {
+            if x <= 0 || y <= 0 || x >= rows as isize - 1 || y >= columns as isize - 1 {
+                break;
+            }
+            x += dx;
+            y += dy;
+            coords.push((x.try_into().unwrap(), y.try_into().unwrap()));
+        }
+        coords
+    })
+}
+
+pub fn part_one(input: &str) -> Option<usize> {
+    let (rows, columns, grid) = parse_map(input);
+
     let visible = grid.iter().filter(|((row, col), height)| {
-        if *row == 0 || *row == max_row_index || *col == 0 || *col == max_column_index {
+        if *row == 0 || *row == rows - 1 || *col == 0 || *col == columns - 1 {
             return true;
         }
-        let visible_l = (0..*row).all(|x| grid.get(&(x, *col)).unwrap() < height);
-        let visible_r = (row + 1..=max_row_index).all(|x| grid.get(&(x, *col)).unwrap() < height);
-        let visible_u = (0..*col).all(|y| grid.get(&(*row, y)).unwrap() < height);
-        let visible_d =
-            (col + 1..=max_column_index).all(|y| grid.get(&(*row, y)).unwrap() < height);
 
-        visible_l || visible_r || visible_u || visible_d
+        paths_to_edge((*row, *col), rows, columns)
+            .iter()
+            .any(|coords| {
+                coords
+                    .iter()
+                    .all(|(x, y)| grid.get(&(*x, *y)).unwrap() < height)
+            })
     });
     let a = visible.collect::<Vec<_>>();
 
@@ -35,7 +64,34 @@ pub fn part_one(input: &str) -> Option<usize> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    let (rows, columns, grid) = parse_map(input);
+
+    let scores = grid.iter().map(|((row, col), height)| {
+        if *row == 0 || *row == rows - 1 || *col == 0 || *col == columns - 1 {
+            return 0;
+        }
+        paths_to_edge((*row, *col), rows, columns)
+            .iter()
+            .fold(1, |score_memo, coords| {
+                let mut score = 0;
+                for coord in coords {
+                    match grid.get(&coord) {
+                        None => {
+                            break;
+                        }
+                        Some(h) => {
+                            score += 1;
+                            if h >= height {
+                                break;
+                            }
+                        }
+                    }
+                }
+                score_memo * score
+            })
+    });
+
+    scores.max()
 }
 
 fn main() {
@@ -57,6 +113,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc2022::read_file("examples", 8);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(8));
     }
 }
