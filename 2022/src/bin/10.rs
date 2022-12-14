@@ -7,6 +7,72 @@ enum Instruction {
 const CRT_ROWS: usize = 6;
 const CRT_COLS: usize = 40;
 
+struct WalkieVM {
+    program: Vec<Instruction>,
+    register_x: isize,
+    tick: usize,
+    instruction_pointer: usize,
+    complete_at: Option<usize>,
+}
+
+impl WalkieVM {
+    fn new(program: Vec<Instruction>) -> Self {
+        Self {
+            program: program,
+            register_x: 1,
+            tick: 0,
+            instruction_pointer: 0,
+            complete_at: None,
+        }
+    }
+}
+
+struct WalkieVMState {
+    tick: usize,
+    register_x: isize,
+}
+
+impl Iterator for WalkieVM {
+    type Item = WalkieVMState;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match (self.complete_at, self.program.get(self.instruction_pointer)) {
+            (None, _) => {
+                // First cycle
+                self.complete_at =
+                    get_instruction_length(self.program.get(self.instruction_pointer));
+            }
+            (Some(t), Some(current_instruction)) if t == self.tick => {
+                self.instruction_pointer += 1;
+
+                match current_instruction {
+                    Instruction::AddX(x) => {
+                        self.register_x += x;
+                    }
+                    _ => (),
+                };
+
+                // Determine when the next instruction will complete
+                match get_instruction_length(self.program.get(self.instruction_pointer)) {
+                    Some(length) => {
+                        self.complete_at = Some(self.tick + length);
+                    }
+                    None => {
+                        return None;
+                    }
+                };
+            }
+            _ => (/* clock tick with no state change */),
+        }
+
+        self.tick += 1;
+        Some(WalkieVMState {
+            tick: self.tick,
+            register_x: self.register_x,
+        })
+    }
+}
+
 fn parse_input(input: &str) -> Vec<Instruction> {
     input
         .lines()
@@ -34,45 +100,14 @@ fn get_instruction_length(instruction: Option<&Instruction>) -> Option<usize> {
 
 pub fn part_one(input: &str) -> Option<isize> {
     let instructions = parse_input(input);
-    let mut register_x = 1;
-    let mut tick: usize = 0;
-    let mut instruction_pointer = 0;
-    let mut complete_at: Option<usize> = None;
+    let mut vm = WalkieVM::new(instructions);
+
     let mut signal_strength: isize = 0;
 
-    loop {
-        // Capture signal strength at start of each tick
-        if tick == 20 || (((tick as isize) - 20) % 40) == 0 {
-            signal_strength += register_x * (tick as isize);
+    for state in vm {
+        if state.tick == 20 || (((state.tick as isize) - 20) % 40) == 0 {
+            signal_strength += state.register_x * (state.tick as isize);
         }
-
-        match (complete_at, instructions.get(instruction_pointer)) {
-            (None, _) => {
-                // First cycle
-                complete_at = get_instruction_length(instructions.get(instruction_pointer));
-            }
-            (Some(t), Some(current_instruction)) if t == tick => {
-                instruction_pointer += 1;
-
-                match current_instruction {
-                    Instruction::AddX(x) => {
-                        register_x += x;
-                    }
-                    _ => (),
-                };
-
-                // Determine when the next instruction will complete
-                match get_instruction_length(instructions.get(instruction_pointer)) {
-                    Some(length) => {
-                        complete_at = Some(tick + length);
-                    }
-                    None => break, // HALT: no more instructions
-                };
-            }
-            _ => (/* clock tick with no state change */),
-        }
-
-        tick += 1;
     }
 
     Some(signal_strength)
