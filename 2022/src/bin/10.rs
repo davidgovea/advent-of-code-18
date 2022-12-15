@@ -4,7 +4,6 @@ enum Instruction {
     AddX(isize),
 }
 
-const CRT_ROWS: usize = 6;
 const CRT_COLS: usize = 40;
 
 struct WalkieVM {
@@ -113,8 +112,40 @@ pub fn part_one(input: &str) -> Option<isize> {
     Some(signal_strength)
 }
 
-pub fn part_two(input: &str) -> Option<isize> {
-    None
+#[derive(Debug, Clone)]
+enum CRTPixel {
+    Lit,
+    Dark,
+}
+
+pub fn part_two(input: &str) -> Option<String> {
+    let program = parse_input(input);
+    let mut vm = WalkieVM::new(program);
+    let mut crt_buffer: Vec<CRTPixel> = vec![];
+
+    for state in vm {
+        let drawing_pixel = (state.tick - 1) % CRT_COLS;
+        let sprite_location = state.register_x;
+        let is_lit = (drawing_pixel as isize - sprite_location).abs() <= 1;
+        match is_lit {
+            true => crt_buffer.push(CRTPixel::Lit),
+            false => crt_buffer.push(CRTPixel::Dark),
+        };
+    }
+
+    let display = crt_buffer
+        .chunks(CRT_COLS)
+        .map(|row| {
+            row.iter()
+                .map(|pixel| match pixel {
+                    CRTPixel::Lit => "#",
+                    CRTPixel::Dark => ".",
+                })
+                .collect::<String>()
+        })
+        .collect::<Vec<String>>();
+
+    Some(display.join("\n"))
 }
 
 fn main() {
@@ -136,6 +167,20 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc2022::read_file("examples", 10);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(
+            part_two(&input),
+            Some(
+                "
+##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######.....
+"
+                .trim()
+                .to_string()
+            )
+        );
     }
 }
