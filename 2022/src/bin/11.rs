@@ -170,7 +170,43 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    None
+    let (_, mut monkeys) = parse_input(input).unwrap();
+
+    let test_product: u64 = monkeys.iter().map(|m| m.divisor).product();
+
+    for _round in 0..10000 {
+        for monkey_index in 0..monkeys.len() {
+            for item_index in 0..monkeys[monkey_index].items.len() {
+                let new_worry;
+                let receiver_index;
+                {
+                    let monkey = monkeys.get_mut(monkey_index).unwrap();
+                    let item = monkey.items[item_index];
+                    new_worry = monkey.operation.eval(item) % test_product;
+                    receiver_index = match new_worry % monkey.divisor {
+                        0 => monkey.receiver_if_true,
+                        _ => monkey.receiver_if_false,
+                    };
+                }
+                let receiver = monkeys.get_mut(receiver_index).unwrap();
+                receiver.items.push(new_worry);
+            }
+
+            let monkey = monkeys.get_mut(monkey_index).unwrap();
+            monkey.items_inspected += monkey.items.len() as u64;
+            monkey.items.clear();
+        }
+    }
+
+    // sort monkeys by items_inspected
+    monkeys.sort_by(|a, b| b.items_inspected.cmp(&a.items_inspected));
+    Some(
+        monkeys
+            .iter()
+            .take(2)
+            .map(|m| m.items_inspected)
+            .fold(1, |acc, x| acc * x),
+    )
 }
 
 fn main() {
