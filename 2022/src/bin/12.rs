@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::collections::VecDeque;
 
 type Coord = (usize, usize);
@@ -49,7 +48,7 @@ fn find_possible_moves(grid: &HashMap<Coord, u32>, current: Coord) -> Vec<Coord>
     moves
 }
 
-fn perform_search(grid: HashMap<Coord, u32>, start: Coord, end: Coord) -> Option<u32> {
+fn perform_search(grid: &HashMap<Coord, u32>, start: Coord, end: Coord) -> Option<u32> {
     let mut distances: HashMap<Coord, u32> = HashMap::new();
     let mut queue = VecDeque::new();
 
@@ -75,11 +74,27 @@ fn perform_search(grid: HashMap<Coord, u32>, start: Coord, end: Coord) -> Option
 
 pub fn part_one(input: &str) -> Option<u32> {
     let map = parse_map(input);
-    perform_search(map.grid, map.start, map.end)
+    perform_search(&map.grid, map.start, map.end)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    let map = parse_map(input);
+
+    let starting_coords = map
+        .grid
+        .iter()
+        .filter(|(_, v)| **v == 'a' as u32)
+        .map(|(k, _)| k)
+        .collect::<Vec<_>>();
+
+    let distances = starting_coords
+        .iter()
+        .map(|&start| perform_search(&map.grid, *start, map.end))
+        .filter(|d| d.is_some())
+        .map(|d| d.unwrap())
+        .collect::<Vec<_>>();
+
+    distances.into_iter().min()
 }
 
 fn main() {
@@ -101,6 +116,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc2022::read_file("examples", 12);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(29));
     }
 }
