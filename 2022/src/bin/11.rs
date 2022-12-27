@@ -131,82 +131,68 @@ fn parse_input(input: &str) -> IResult<&str, Vec<Monkey>> {
     Ok((input, monkeys))
 }
 
+fn compute_monkey_business(monkeys: &Vec<Monkey>) -> u64 {
+    let mut inspected_counts = monkeys
+        .iter()
+        .map(|m| m.items_inspected)
+        .collect::<Vec<_>>();
+
+    inspected_counts.sort_by(|a, b| b.cmp(a));
+
+    inspected_counts.iter().take(2).product()
+}
+
+fn perform_round<F>(monkeys: &mut Vec<Monkey>, f: F)
+where
+    F: Fn(&Monkey, u64) -> u64,
+{
+    for monkey_index in 0..monkeys.len() {
+        for item_index in 0..monkeys[monkey_index].items.len() {
+            let new_worry;
+            let receiver_index;
+            {
+                let monkey = monkeys.get_mut(monkey_index).unwrap();
+                let item = monkey.items[item_index];
+                new_worry = f(monkey, item);
+                receiver_index = match new_worry % monkey.divisor {
+                    0 => monkey.receiver_if_true,
+                    _ => monkey.receiver_if_false,
+                };
+            }
+            let receiver = monkeys.get_mut(receiver_index).unwrap();
+            receiver.items.push(new_worry);
+        }
+        let monkey = monkeys.get_mut(monkey_index).unwrap();
+        monkey.items_inspected += monkey.items.len() as u64;
+        monkey.items.clear();
+    }
+}
+
 pub fn part_one(input: &str) -> Option<u64> {
     let (_, mut monkeys) = parse_input(input).unwrap();
 
     for _round in 0..20 {
-        for monkey_index in 0..monkeys.len() {
-            for item_index in 0..monkeys[monkey_index].items.len() {
-                let new_worry;
-                let receiver_index;
-                {
-                    let monkey = monkeys.get_mut(monkey_index).unwrap();
-                    let item = monkey.items[item_index];
-                    new_worry = (monkey.operation.eval(item) as f64 / 3.0).floor() as u64;
-                    receiver_index = match new_worry % monkey.divisor {
-                        0 => monkey.receiver_if_true,
-                        _ => monkey.receiver_if_false,
-                    };
-                }
-                let receiver = monkeys.get_mut(receiver_index).unwrap();
-                receiver.items.push(new_worry);
-            }
-
-            let monkey = monkeys.get_mut(monkey_index).unwrap();
-            monkey.items_inspected += monkey.items.len() as u64;
-            monkey.items.clear();
-        }
+        perform_round(&mut monkeys, |monkey, item| {
+            (monkey.operation.eval(item) as f64 / 3.0).floor() as u64
+        });
     }
 
-    // sort monkeys by items_inspected
-    monkeys.sort_by(|a, b| b.items_inspected.cmp(&a.items_inspected));
-    Some(
-        monkeys
-            .iter()
-            .take(2)
-            .map(|m| m.items_inspected)
-            .fold(1, |acc, x| acc * x),
-    )
+    Some(compute_monkey_business(&monkeys))
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
     let (_, mut monkeys) = parse_input(input).unwrap();
 
+    // Compute the product of all the divisors, so we can use it reduce the worry level from overflowing
     let test_product: u64 = monkeys.iter().map(|m| m.divisor).product();
 
     for _round in 0..10000 {
-        for monkey_index in 0..monkeys.len() {
-            for item_index in 0..monkeys[monkey_index].items.len() {
-                let new_worry;
-                let receiver_index;
-                {
-                    let monkey = monkeys.get_mut(monkey_index).unwrap();
-                    let item = monkey.items[item_index];
-                    new_worry = monkey.operation.eval(item) % test_product;
-                    receiver_index = match new_worry % monkey.divisor {
-                        0 => monkey.receiver_if_true,
-                        _ => monkey.receiver_if_false,
-                    };
-                }
-                let receiver = monkeys.get_mut(receiver_index).unwrap();
-                receiver.items.push(new_worry);
-            }
-
-            let monkey = monkeys.get_mut(monkey_index).unwrap();
-            monkey.items_inspected += monkey.items.len() as u64;
-            monkey.items.clear();
-        }
+        perform_round(&mut monkeys, |monkey, item| {
+            monkey.operation.eval(item) % test_product
+        });
     }
 
-    // sort monkeys by items_inspected
-    monkeys.sort_by(|a, b| b.items_inspected.cmp(&a.items_inspected));
-    Some(
-        monkeys
-            .iter()
-            .take(2)
-            .map(|m| m.items_inspected)
-            .fold(1, |acc, x| acc * x),
-    )
+    Some(compute_monkey_business(&monkeys))
 }
 
 fn main() {
