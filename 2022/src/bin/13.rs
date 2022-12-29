@@ -39,6 +39,12 @@ impl PartialOrd for Node {
     }
 }
 
+impl Ord for Node {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
+
 fn parse_input(input: &str) -> Vec<(Vec<Node>, Vec<Node>)> {
     input
         .split("\n\n")
@@ -71,7 +77,32 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    let mut all_packets =
+        parse_input(input)
+            .into_iter()
+            .fold(Vec::new(), |mut acc, (left, right)| {
+                acc.push(left);
+                acc.push(right);
+                acc
+            });
+    all_packets.sort();
+
+    let divider_one = vec![Node::List(vec![Node::Number(2)])];
+    let divider_two = vec![Node::List(vec![Node::Number(6)])];
+
+    let divider_one_index = all_packets
+        .iter()
+        .position(|packet| packet > &divider_one)
+        .unwrap()
+        + 1;
+
+    let divider_two_index = all_packets
+        .iter()
+        .position(|packet| packet > &divider_two)
+        .unwrap()
+        + 2;
+
+    Some(divider_one_index as u32 * divider_two_index as u32)
 }
 
 fn main() {
@@ -93,6 +124,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let input = aoc2022::read_file("examples", 13);
-        assert_eq!(part_two(&input), None);
+        assert_eq!(part_two(&input), Some(140));
     }
 }
